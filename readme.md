@@ -66,11 +66,6 @@ python main.py
 - 若 MediaPipe 跟踪不稳定，调整 `min_detection_confidence` 和 `min_tracking_confidence` 值。
 - 若子弹方向/速度不合适，修改 `shoot_multiple` 的速度向量，或在 `Bullet.update` 中使用浮点位置累积以获得更平滑轨迹。
 
-下一步建议
------------
-- 我可以帮你把 `enemy_types` 提取到 `constants.py` 以方便调参。
-- 如果想把 README 改为中英双语或包含运行演示 GIF，我也可以添加。
-
 作者注
 ------
 这是一个实验/学习项目。修改代码时请在虚拟环境中运行测试。欢迎告诉我你想调整的具体参数或新增玩法（如敌人发射、子弹穿透等）。

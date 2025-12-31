@@ -46,6 +46,7 @@ def main():
     # state
     running = True
     hand_x_position = 0.5
+    hand_y_position = 0.5
     is_firing = False
     score = 0
 
@@ -84,6 +85,7 @@ def main():
         if results.multi_hand_landmarks:
             for hand_landmarks in results.multi_hand_landmarks:
                 hand_x_position = hand_landmarks.landmark[9].x
+                hand_y_position = hand_landmarks.landmark[9].y
                 finger_count = count_fingers(hand_landmarks)
                 openness = palm_openness(hand_landmarks)
                 tip_dist = fingertip_distance(hand_landmarks, 4, 8)
@@ -101,8 +103,12 @@ def main():
 
                 mp_draw.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
 
-        # update
-        player.update(hand_x_position)
+        # update (pass both horizontal and vertical targets)
+        try:
+            player._update_positions(hand_x_position, hand_y_position)
+        except Exception:
+            # fallback to legacy single-arg update if something unexpected occurs
+            player.update(hand_x_position)
         enemies.update()
         bullets.update()
 

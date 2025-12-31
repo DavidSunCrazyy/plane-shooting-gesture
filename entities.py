@@ -83,12 +83,34 @@ class Player(pygame.sprite.Sprite):
         self.speed = 0
 
     def update(self, hand_x):
+        # legacy single-arg signature kept for backward compatibility
+        self._update_positions(hand_x, None)
+
+    def _update_positions(self, hand_x, hand_y=None):
+        # horizontal movement (smooth)
         if hand_x is not None:
-            target_x = int(hand_x * args_max_width())
-            self.rect.centerx += (target_x - self.rect.centerx) * 0.2
-        if self.rect.left < 0: self.rect.left = 0
+            try:
+                target_x = int(hand_x * args_max_width())
+                self.rect.centerx += int((target_x - self.rect.centerx) * 0.2)
+            except Exception:
+                pass
+        # vertical movement (smooth)
+        if hand_y is not None:
+            try:
+                target_y = int(hand_y * args_screen_height())
+                self.rect.centery += int((target_y - self.rect.centery) * 0.2)
+            except Exception:
+                pass
+
+        # enforce bounds
+        if self.rect.left < 0:
+            self.rect.left = 0
         if self.rect.right > args_max_width():
             self.rect.right = args_max_width()
+        if self.rect.top < 0:
+            self.rect.top = 0
+        if self.rect.bottom > args_screen_height():
+            self.rect.bottom = args_screen_height()
 
     def shoot(self):
         b = Bullet(self.rect.centerx, self.rect.top)
@@ -123,3 +145,7 @@ def set_max_width(w):
 def set_screen_height(h):
     global _screen_height
     _screen_height = h
+
+def args_screen_height():
+    global _screen_height
+    return _screen_height if _screen_height is not None else 600
