@@ -20,7 +20,16 @@ def init_pygame():
     pygame.display.set_caption("Gesture Shooting - Gemini Demo")
     clock = pygame.time.Clock()
     font = pygame.font.SysFont("Arial", 24)
-    return screen, clock, font
+    
+    # Load background image
+    try:
+        bg_image = pygame.image.load('assets/images/bg.png')
+        bg_image = pygame.transform.scale(bg_image, (SCREEN_WIDTH, SCREEN_HEIGHT))
+    except Exception as e:
+        print(f"Failed to load background: {e}")
+        bg_image = None
+    
+    return screen, clock, font, bg_image
 
 
 def init_mediapipe():
@@ -214,9 +223,13 @@ def handle_collisions(player, all_sprites, enemies, bullets, state, firing_confi
         state['running'] = False
 
 
-def render_game(screen, font, player, all_sprites, enemies, frame, state, is_firing, display_status):
+def render_game(screen, font, player, all_sprites, enemies, frame, state, is_firing, display_status, bg_image):
     """Render all game graphics."""
-    screen.fill(BLACK)
+    bg_image = False
+    if bg_image:
+       screen.blit(bg_image, (0, 0))
+    else:
+        screen.fill(BLACK)
     all_sprites.draw(screen)
 
     # Enemy HP bars
@@ -255,7 +268,7 @@ def render_game(screen, font, player, all_sprites, enemies, frame, state, is_fir
     pygame.display.flip()
 
 
-def game_loop(screen, clock, font, hands, mp_hands, mp_draw, cap, all_sprites, enemies, bullets, player, state, firing_config):
+def game_loop(screen, clock, font, hands, mp_hands, mp_draw, cap, all_sprites, enemies, bullets, player, state, firing_config, bg_image):
     """Main game loop."""
     set_max_width(SCREEN_WIDTH)
     set_screen_height(SCREEN_HEIGHT)
@@ -287,7 +300,7 @@ def game_loop(screen, clock, font, hands, mp_hands, mp_draw, cap, all_sprites, e
         handle_collisions(player, all_sprites, enemies, bullets, state, firing_config)
 
         # Render
-        render_game(screen, font, player, all_sprites, enemies, frame, state, is_firing, display_status)
+        render_game(screen, font, player, all_sprites, enemies, frame, state, is_firing, display_status, bg_image)
 
     cap.release()
 
@@ -295,7 +308,7 @@ def game_loop(screen, clock, font, hands, mp_hands, mp_draw, cap, all_sprites, e
 def main():
     """Main entry point."""
     # Initialize all systems
-    screen, clock, font = init_pygame()
+    screen, clock, font, bg_image = init_pygame()
     hands, mp_draw, mp_hands = init_mediapipe()
     cap = init_camera()
     all_sprites, enemies, bullets, player = init_sprites()
@@ -305,7 +318,7 @@ def main():
     try:
         # Run game
         game_loop(screen, clock, font, hands, mp_hands, mp_draw, cap,
-                  all_sprites, enemies, bullets, player, state, firing_config)
+                  all_sprites, enemies, bullets, player, state, firing_config, bg_image)
     finally:
         pygame.quit()
         sys.exit()

@@ -5,8 +5,14 @@ import random
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
-        self.image = pygame.Surface((6, 12))
-        self.image.fill((255,255,255))
+        # try to load bullet image from assets, fallback to small white surface
+        try:
+            image_path = os.path.join(os.path.dirname(__file__), 'assets', 'images', 'bullet.png')
+            img = pygame.image.load(image_path).convert_alpha()
+            self.image = img
+        except Exception:
+            self.image = pygame.Surface((6, 12))
+            self.image.fill((255,255,255))
         self.rect = self.image.get_rect()
         self.rect.bottom = y
         self.rect.centerx = x
