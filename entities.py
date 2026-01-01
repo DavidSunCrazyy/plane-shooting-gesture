@@ -26,29 +26,64 @@ class Bullet(pygame.sprite.Sprite):
 
 
 class Enemy(pygame.sprite.Sprite):
+    # Class-level image cache to avoid reloading
+    _image_cache = {}
+
     def __init__(self):
         super().__init__()
-        # Enemy types: (name, color, (w,h), hp, min_speed, max_speed, score)
+        # Enemy types: (name, image_file, hp, min_speed, max_speed, score)
         self.enemy_types = [
-            ('weak', (200, 200, 0), (30, 20), 1, 1, 2, 5),
-            ('normal', (255,0,0), (40, 30), 3, 1, 3, 10),
-            ('tank', (0,0,255), (60, 50), 6, 0.5, 2, 25),
+            ('weak', 'enemy-2.png', 1, 1, 2, 5),
+            ('normal', 'enemy-3.png', 3, 1, 3, 10),
+            ('tank', 'enemy-1.png', 6, 0.5, 2, 25),
         ]
         self.set_type(random.choice(self.enemy_types))
         self.rect = self.image.get_rect()
         self.rect.x = 0
         self.rect.y = random.randrange(-100, -40)
 
+    def _load_image(self, image_file):
+        """Load enemy image with caching. Falls back to colored surface if not found."""
+        if image_file in self._image_cache:
+            return self._image_cache[image_file].copy()
+        
+        try:
+            image_path = os.path.join(os.path.dirname(__file__), 'assets', 'images', image_file)
+            img = pygame.image.load(image_path).convert_alpha()
+            self._image_cache[image_file] = img
+            return img.copy()
+        except Exception:
+            # Fallback: create a colored surface based on type
+            return None
+
     def set_type(self, t):
-        name, color, size, hp, min_s, max_s, score = t
+        name, image_file, hp, min_s, max_s, score = t
         self.type = name
-        self.color = color
-        self.size = size
         self.max_hp = hp
         self.hp = hp
         self.score_value = score
-        self.image = pygame.Surface(size)
-        self.image.fill(color)
+        
+        # Try to load image
+        img = self._load_image(image_file)
+        if img is not None:
+            self.image = img
+        else:
+            # Fallback colors for each type
+            colors = {
+                'weak': (200, 200, 0),
+                'normal': (255, 0, 0),
+                'tank': (0, 0, 255),
+            }
+            fallback_sizes = {
+                'weak': (30, 20),
+                'normal': (40, 30),
+                'tank': (60, 50),
+            }
+            size = fallback_sizes.get(name, (40, 30))
+            color = colors.get(name, (128, 128, 128))
+            self.image = pygame.Surface(size)
+            self.image.fill(color)
+        
         self.min_speed = min_s
         self.max_speed = max_s
         self.speedy = random.uniform(self.min_speed, self.max_speed)
